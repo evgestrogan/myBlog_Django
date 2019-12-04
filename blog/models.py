@@ -3,7 +3,15 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 
+class PublishedManager(models.Manager):  # Создание своего менеджера модели
+    def get_queryset(self):
+        return super().get_queryset().filter(status='published')
+
+
 class Post(models.Model):
+    object = models.Manager()
+    published = PublishedManager()
+
     STATUS_CHOICES = (
         ('draft', 'Draft'),
         ('published', 'Published'),
@@ -21,13 +29,14 @@ class Post(models.Model):
     updated = models.DateTimeField(auto_now=True)
     # auto_now - поле перезаписывается автоматически при сохранении объекта
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
+
     # choices - ограничевает возможные значения списком STATUS_CHOICES
 
     class Meta:
         ordering = ('-publish',)
+
     # Meta - содержит метаданные(напр. порядок сортировки ordering)
 
     def __str__(self):
         return self.title
     # __str__ - возвращает отображение объекта, понятное человеку
-
