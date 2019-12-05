@@ -39,4 +39,12 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
     # __str__ - возвращает отображение объекта, понятное человеку
+
+    def get_absolute_url(self):
+        return reversed('blog:post_detail', args=[self.publish.year, self.publish.month,
+                                                  self.publish.day, self.slug])
+
+    # метод get_absolute_url возвращает канонический URL объекта.
+    # функция reversed дает возможность получать URl
