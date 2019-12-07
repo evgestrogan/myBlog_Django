@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
 from django.utils import timezone
 
 
@@ -43,7 +44,7 @@ class Post(models.Model):
     # __str__ - возвращает отображение объекта, понятное человеку
 
     def get_absolute_url(self):
-        return reversed('blog:post_detail', args=[self.publish.year, self.publish.month,
+        return reverse('blog:post_detail', args=[self.publish.year, self.publish.month,
                                                   self.publish.day, self.slug])
 
     # метод get_absolute_url возвращает канонический URL объекта.
