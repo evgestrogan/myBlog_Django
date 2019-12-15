@@ -3,8 +3,8 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 
-from blog.forms import EmailPostForm
-from blog.models import Post
+from blog.forms import EmailPostForm, CommentForm
+from blog.models import Post, Comment
 
 
 class PostListView(ListView):  # аналог функции post_list()
@@ -40,7 +40,22 @@ def post_list(request):  # main page (сейчас не используется
 def post_detail(request, year, month, day, post):  # page with post
     post = get_object_or_404(Post, slug=post, status='published', publish__year=year,
                              publish__month=month, publish__day=day)
-    return render(request, 'blog/post/detail.html', {'post': post})
+    comments = post.comments.filter(active=True)
+    new_comment = None
+    if request.method == 'POST':
+        comment_form = CommentForm(data=request.POST)
+        if comment_form.is_valid():
+            new_comment = comment_form.save(commit=False)
+            # commit = False - значит что объект модели создан, но не сохранен в БД
+            new_comment.post = post
+            # добавляем ForeignKey в модель Comment
+            new_comment.save()
+    else:
+        comment_form = CommentForm()
+    return render(request, 'blog/post/detail.html', {'post': post,
+                                                     'comments': comments,
+                                                     'new_comment': new_comment,
+                                                     'comment_form': comment_form})
 
 
 def post_share(request, post_id):
