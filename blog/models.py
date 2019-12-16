@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils import timezone
-
+from taggit.managers import TaggableManager
 
 class PublishedManager(models.Manager):  # Создание своего менеджера модели
     def get_queryset(self):
@@ -30,8 +30,8 @@ class Post(models.Model):
     updated = models.DateTimeField(auto_now=True)
     # auto_now - поле перезаписывается автоматически при сохранении объекта
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
-
     # choices - ограничевает возможные значения списком STATUS_CHOICES
+    tags = TaggableManager()
 
     class Meta:
         ordering = ('-publish',)

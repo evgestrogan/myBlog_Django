@@ -5,9 +5,10 @@ from django.views.generic import ListView
 
 from blog.forms import EmailPostForm, CommentForm
 from blog.models import Post, Comment
+from taggit.models import Tag
 
 
-class PostListView(ListView):  # аналог функции post_list()
+class PostListView(ListView):  # аналог функции post_list() (сейчас не используется. Был заменен функцией-обработчиком)
     queryset = Post.published.all()
     # это свой менеджер модели который вернет список постов в обратном порядке публикации
     # queryset - когда свой менеджер, model = Post.objects.all() - чтобы использовать стандартный
@@ -19,9 +20,14 @@ class PostListView(ListView):  # аналог функции post_list()
     # использование указанного шаблона
 
 
-def post_list(request):  # main page (сейчас не используется. Был заменен классом-обработчиком)
+def post_list(request, tag_slug=None):  # main page
     object_list = Post.published.all()
     # это свой менеджер модели который вернет список постов в обратном порядке публикации
+    tag = None
+
+    if tag_slug:
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        object_list = object_list.filter(tags__in=[tag])
     paginator = Paginator(object_list, 3)
     page = request.GET.get('page')
     # извлекаем из запроса GET-параметр page, который указывает текущую страницу
@@ -34,7 +40,7 @@ def post_list(request):  # main page (сейчас не используется
     except EmptyPage:
         posts = paginator.page(paginator.num_pages)
         # если page больше, чем общее кол-во страниц, то возвращаем последнюю
-    return render(request, 'blog/post/list.html', {'page': page, 'posts': posts})
+    return render(request, 'blog/post/list.html', {'page': page, 'posts': posts, 'tag': tag})
 
 
 def post_detail(request, year, month, day, post):  # page with post
