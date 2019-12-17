@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.utils import timezone
 from taggit.managers import TaggableManager
 
+
 class PublishedManager(models.Manager):  # Создание своего менеджера модели
     def get_queryset(self):
         return super().get_queryset().filter(status='published')
@@ -45,7 +46,7 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         return reverse('blog:post_detail', args=[self.publish.year, self.publish.month,
-                                                  self.publish.day, self.slug])
+                                                 self.publish.day, self.slug])
 
     # метод get_absolute_url возвращает канонический URL объекта.
     # функция reversed дает возможность получать URl
@@ -61,7 +62,7 @@ class Comment(models.Model):
     active = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ('created', )
+        ordering = ('created',)
 
     def __str__(self):
         return 'comment by {} on {}'.format(self.name, self.post)

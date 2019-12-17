@@ -1,12 +1,19 @@
 {% extends "blog/post/base.html" %}
+{% load blog_tags %}
 {% block title %}{{ post.title}}{% endblock %}
 {% block content %}
     <h1>{{ post.title }}</h1>
     <p class="date">Published {{ post.publish }} by {{ post.author }}</p>
-    {{ post.body|linebreaks }}
+    {{ post.body|markdown }}
     <p>
         <a href="{% url "blog:post_share" post.id %}">Share this post</a>
     </p>
+    <h2>Similar posts</h2>
+    {% for similar_post in similar_posts %}
+        <p>
+            <a href="{{ similar_post.get_absolute_url }}"> {{ similar_post.title }}</a>
+        </p>
+    {% endfor %}
     {% with comments.count as total_comments %}
         <!--Конструкция 'with..as'  позволяет присвоить comments.count
         имя total_comments, но только внутри этого блока. Нужно нам это для того,
