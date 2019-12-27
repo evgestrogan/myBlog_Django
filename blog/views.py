@@ -3,10 +3,12 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django.db.models import Count
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank, TrigramSimilarity
 
 from blog.forms import EmailPostForm, CommentForm
 from blog.models import Post, Comment
 from taggit.models import Tag
+from .forms import SearchForm
 
 
 class PostListView(ListView):  # аналог функции post_list() (сейчас не используется. Был заменен функцией-обработчиком)
@@ -60,7 +62,6 @@ def post_detail(request, year, month, day, post):  # page with post
     else:
         comment_form = CommentForm()
     post_tags_ids = post.tags.values_list('id', flat=True)
-    print(post_tags_ids)
     # получение всех id тэгов текущей статьи
     # без flat - вернет <QuerySet [(1,), (2,), (3,)]>
     # с flat - <QuerySet [1, 2, 3]>
@@ -99,3 +100,18 @@ def post_share(request, post_id):
         form = EmailPostForm()
         # создание объекта фомы и вывод его
     return render(request, 'blog/post/share.html', {'post': post, 'form': form, 'sent': sent})
+
+
+def post_search(request):
+    form = SearchForm()
+    query = None
+    results = []
+    if 'query' in request.GET:
+        form = SearchForm(request.GET)
+    if form.is_valid():
+        query = form.cleaned_data['query']
+        results = Post.object.annotate(similarity=TrigramSimilarity('title', query),).filter(similarity__gt=0.3).order_by('-similarity')
+        print(results)
+    return render(request, 'blog/post/search.html', {'form': form,
+                                                         'query': query,
+                                                         'results': results})
